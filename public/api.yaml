@@ -1,0 +1,483 @@
+openapi: 3.0.3
+info:
+  title: Swagger TODO API с аунтефикацией через токен - OpenAPI 3.0
+  description: |-
+    Это API разработано в целях тренировки начальных навыков frontend разработчика, каждый разрабочик сможет разработать под него свой собственный клиент.
+  contact:
+    email: ziminartem.dev@gmail.com
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: /api
+tags:
+  - name: todo
+    description: Операции со списком задач
+  - name: auth
+    description: Операции с аутентификацией
+  - name: tokens
+    description: Операции с токенами аутентификации
+paths:
+  /tokens:
+    get:
+      tags:
+        - tokens
+      summary: Получение всех токенов пользователя
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Token'
+        '401':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthenticated."
+  /token/{tokenId}:
+    get:
+      tags:
+        - tokens
+      summary: Получение токена пользователя
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: integer
+          required: true
+          description: ID Токена
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthenticated."
+    delete:
+      tags:
+        - tokens
+      summary: Удаление токена пользователя
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: integer
+          required: true
+          description: ID Токена
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '401':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthenticated."
+  /logout:
+    get:
+      tags:
+        - auth
+      summary: Выход из системы (удаление текущего токена)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '401':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthenticated."
+  /auth:
+    post:
+      tags:
+        - auth
+      summary: Аутентификация существующего пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "example@mail.com"
+                password:
+                  type: string
+                  example: "qwerty123456"
+        required: true
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "5|TiBOgm4Sq4CBKECE0zoscbqNlcgVYzIC0qqAohZv"
+        '422':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Неверный логин или пароль."
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        example: "Неверный логин или пароль."
+  /registration:
+    post:
+      tags:
+        - auth
+      summary: Регистрация пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "example@mail.com"
+                password:
+                  type: string
+                  example: "qwerty123456"
+                name:
+                  type: string
+                  example: "Ivan"
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Поле должнго быть уникально."
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        example: "Поле должнго быть уникально."
+  /todos:
+    get:
+      tags:
+        - todo
+      summary: Получение списка всех задач пользователя
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '401':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthenticated."
+    post:
+      tags:
+        - todo
+      summary: Создание новой задачи
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         $ref: '#/components/schemas/Todo'
+      #   required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Todo'
+        '422':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данное поле необходимо для заполнения."
+                  errors:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        example: "Данное поле необходимо для заполнения."
+  /todos/{todoId}:
+    get:
+      tags:
+        - todo
+      summary: Получение списка всех задач пользователя
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: todoId
+          schema:
+            type: integer
+          required: true
+          description: ID Задачи
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '404':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No query results for model [App\\Models\\Todo] 3."
+    delete:
+      tags:
+        - todo
+      summary: Удаление задачи
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: todoId
+          schema:
+            type: integer
+          required: true
+          description: ID Задачи
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: boolean 
+                example: true
+        '404':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No query results for model [App\\Models\\Todo] 3."
+    put:
+      tags:
+        - todo
+      summary: Изменение задачи
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: todoId
+          schema:
+            type: integer
+          required: true
+          description: ID Задачи
+      requestBody:
+        description: Допускаются любые поля из модели Todo
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Купить хлеб"
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: object 
+                $ref: '#/components/schemas/Todo'
+        '404':
+          description: Неудача
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No query results for model [App\\Models\\Todo] 3."
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        created_at:
+          type: string
+          example: "2023-06-20T00:41:18.000000Z"
+        updated_at:
+          type: string
+          example: "2023-06-20T00:41:18.000000Z"
+        title:
+          type: string
+          example: "Купить хлеб"
+        notes:
+          type: string
+          example: "Купить 2 батона белого хлеба"
+        completed:
+          type: boolean
+          example: false
+        priority:
+          type: string
+          enum: [none, low, medium, high]
+          example: "medium"
+        due_date:
+          type: string
+          example: "1985-01-07 00:00:00"
+        user_id:
+          type: integer
+          format: int64
+          example: 8
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        email:
+          type: string
+          example: "example@mail.com"
+        name:
+          type: string
+          example: "Ivan"
+        updated_at:
+          type: string
+          example: "2023-06-26T16:54:28.000000Z"
+        created_at:
+          type: string
+          example: "2023-06-26T16:54:28.000000Z"
+    Token:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        tokenable_type:
+          type: string
+          example: "App\\Models\\User"
+        tokenable_id:
+          type: integer
+          example: 11
+        name:
+          type: string
+          example: "PostmanRuntime/7.32.3"
+        abilities:
+          type: array
+          items:
+            type: string
+            example: "*"
+        last_used_at:
+          type: string
+          example: null
+        expires_at:
+          type: string
+          example: null
+        created_at:
+          type: string
+          example: "2023-06-21T11:32:13.000000Z"
+        updated_at:
+          type: string
+          example: "2023-06-21T11:32:13.000000Z"
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: Token 
